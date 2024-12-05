@@ -15,8 +15,8 @@ public class MaintenanceRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String maintenanceType;
-    private LocalDate date;
+    private String serviceType;
+    private LocalDate scheduledDate;
     @ManyToOne
     private Car car;
     @ManyToOne
