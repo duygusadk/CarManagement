@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @Data
@@ -22,13 +23,16 @@ public class CarService {
     @Autowired
     private GarageRepository garageRepository;
 
-    public List<Car> getAllCars(String make, Long garageId, Integer fromYear, Integer toYear) {
-        if(make!=null){
-            return carRepository.findByMake(make);
-        } else if (garageId!=null) {
-            return carRepository.findByGarages_Id(garageId);
-        }else if(fromYear != null && toYear != null) {
-            return carRepository.findByProductionYearBetween(fromYear, toYear);
+    public List<Car> getAllCars(Optional<String> make,
+                                Optional<Long> garageId,
+                                Optional<Integer> fromYear,
+                                Optional<Integer> toYear) {
+        if(make.isPresent()){
+            return carRepository.findByMake(make.get());
+        } else if (garageId.isPresent()) {
+            return carRepository.findByGarages_Id(garageId.get());
+        }else if(fromYear.isPresent() && toYear.isPresent()) {
+            return carRepository.findByProductionYearBetween(fromYear.get(), toYear.get());
         }
         return carRepository.findAll();
 

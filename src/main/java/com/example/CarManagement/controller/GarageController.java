@@ -9,32 +9,38 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
+@RequestMapping("/garages")
 public class GarageController {
     @Autowired
     private GarageService garageService;
 
     @GetMapping
-    public List<Garage> getAllGarages() {
+    public List<Garage> getAllGarages(@RequestParam Optional<String> city) {
+            return garageService.getAllGarage(city);
 
-        return garageService.getAllGarage();
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<Garage> getGarageById(@PathVariable Long id) {
+        return new ResponseEntity<>(garageService.getGarageById(id),HttpStatus.OK) ;
     }
 
     @PostMapping
-    public ResponseEntity<String> createGarage(@RequestBody Garage garage) {
+    public ResponseEntity<Garage> createGarage(@RequestBody Garage garage) {
         try {
-            garageService.createGarage(garage);
-            return new ResponseEntity<>("The garage is created", HttpStatus.OK);
+
+            return new ResponseEntity<>( garageService.createGarage(garage), HttpStatus.OK);
         }catch (Exception e){
-            return new ResponseEntity<>("The garage is not created", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<String> updateGarage(@PathVariable Long id, @RequestBody Garage garage) {
         try {
-           // garageService.updateGarage(id, garage);
+            garageService.updateGarage(id, garage);
             return new ResponseEntity<>("The garage is updated", HttpStatus.OK);
         }catch (Exception e){
             return new ResponseEntity<>("The garage is not updated", HttpStatus.BAD_REQUEST);

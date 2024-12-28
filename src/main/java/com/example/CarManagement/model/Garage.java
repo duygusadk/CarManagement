@@ -12,11 +12,11 @@ public class Garage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NonNull
+    @Column(nullable = false)
     private String name;
-    @NonNull
+    @Column(nullable = false)
     private String location;
-    @NonNull
+    @Column(nullable = false)
     private String city;
     private int capacity;
     @OneToMany(mappedBy = "garage", cascade = CascadeType.ALL)

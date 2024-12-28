@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 
@@ -19,19 +20,23 @@ public class GarageService {
     private GarageRepository garageRepository;
 
 
-    public List<Garage> getAllGarage() {
+    public List<Garage> getAllGarage(Optional<String> city) {
+        if(city.isPresent()){
+            return garageRepository.findByCity(city.get());
+        }
         return garageRepository.findAll();
+    }
+    public Garage getGarageById(Long id) {
+        return garageRepository.findById(id).orElseThrow();
     }
 
     public Garage createGarage(Garage garage) {
        return garageRepository.save(garage);
     }
 
-    /*public Garage updateGarage(Long id, Garage garage) {
-        if(garageRepository.findById(id).isEmpty()){
-            throw new NoSuchElementException();
-        }
-      Garage updatedGarage=garageRepository.findById(id).get();
+    public Garage updateGarage(Long id, Garage garage) {
+
+      Garage updatedGarage=garageRepository.findById(id).orElseThrow();
 
       updatedGarage.setId(garage.getId());
       updatedGarage.setCity(garage.getCity());
@@ -40,7 +45,7 @@ public class GarageService {
       updatedGarage.setCapacity(garage.getCapacity());
 
       return garageRepository.save(updatedGarage);
-    }*/
+    }
 
     public void deleteGarage(Long id) {
         garageRepository.deleteById(id);

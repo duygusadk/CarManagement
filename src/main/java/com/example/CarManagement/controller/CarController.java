@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/cars")
@@ -19,10 +20,10 @@ public class CarController {
 
 
     @GetMapping
-    public List<Car> getAllCars(@RequestParam String make,
-                                @RequestParam Long garageId,
-                                @RequestParam Integer fromYear,
-                                @RequestParam Integer toYear) {
+    public List<Car> getAllCars(@RequestParam Optional<String> make,
+                                @RequestParam Optional<Long> garageId,
+                                @RequestParam Optional<Integer> fromYear,
+                                @RequestParam Optional<Integer> toYear) {
         return carService.getAllCars(make,garageId,fromYear,toYear);
     }
 
