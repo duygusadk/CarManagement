@@ -10,6 +10,6 @@ import java.util.List;
 @Repository
 public interface MaintenanceRequestRepository extends JpaRepository<MaintenanceRequest,Long> {
     List<MaintenanceRequest> findByCarId(Long carId);
-    List<MaintenanceRequest> findByServiceCenterId(Long serviceCenterId);
-    List<MaintenanceRequest> findByDateBetween(LocalDate startDate, LocalDate endDate);
+    List<MaintenanceRequest> findByGarageId(Long serviceCenterId);
+    List<MaintenanceRequest> findByScheduledDateBetween(LocalDate startDate, LocalDate endDate);
 }

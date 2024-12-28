@@ -8,6 +8,8 @@ import java.util.List;
 
 @Repository
 public interface CarRepository extends JpaRepository<Car,Long> {
-    List<Car> findByBrand(String brand);
-    List<Car> findByYearBetween(int startYear, int endYear);
+    List<Car> findByMake(String make);
+    List<Car> findByProductionYearBetween(int startYear, int endYear);
+
+    List<Car> findByGarages_Id(Long garageId);
 }
