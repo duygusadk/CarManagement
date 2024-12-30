@@ -1,5 +1,6 @@
 package com.example.CarManagement.service;
 
+import com.example.CarManagement.dto.*;
 import com.example.CarManagement.model.Car;
 import com.example.CarManagement.model.Garage;
 import com.example.CarManagement.model.MaintenanceRequest;
@@ -9,8 +10,12 @@ import com.example.CarManagement.repository.MaintenanceRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class MaintenanceRequestService {
@@ -23,41 +28,61 @@ public class MaintenanceRequestService {
     @Autowired
     private GarageRepository garageRepository;
 
-    public List<MaintenanceRequest> getAllRequests(Optional<Long> carId, Optional<Long> garageId, Optional<String> startDate, Optional<String> endDate) {
+    public List<ResponseMaintenanceDTO> getAllRequests(Optional<Long> carId,
+                                                   Optional<Long> garageId,
+                                                   Optional<String> startDate,
+                                                   Optional<String> endDate) {
+
+        List<MaintenanceRequest> maintenanceRequests;
         if (carId.isPresent()) {
-            return maintenanceRequestRepository.findByCarId(carId.get());
+            maintenanceRequests= maintenanceRequestRepository.findByCarId(carId.get());
         } else if (garageId.isPresent()) {
-            return maintenanceRequestRepository.findByGarageId(garageId.get());
+            maintenanceRequests= maintenanceRequestRepository.findByGarageId(garageId.get());
         } else if (startDate.isPresent() && endDate.isPresent()) {
-            return maintenanceRequestRepository.findByScheduledDateBetween(startDate.get(), endDate.get());
+            maintenanceRequests= maintenanceRequestRepository.findByScheduledDateBetween(startDate.get(), endDate.get());
+        }else {
+            maintenanceRequests = maintenanceRequestRepository.findAll();
         }
-        return maintenanceRequestRepository.findAll();
+        return maintenanceRequests.stream()
+                .map(request -> new ResponseMaintenanceDTO(
+                        request.getId(),
+                        request.getCar().getId(),
+                        request.getCar().getMake() + " " + request.getCar().getModel(),
+                        request.getServiceType(),
+                        request.getScheduledDate(),
+                        request.getGarage().getId(),
+                        request.getGarage().getName()
+                ))
+                .collect(Collectors.toList());
     }
     public MaintenanceRequest getMaintenanceRequestById(Long id) {
         return maintenanceRequestRepository.findById(id).orElseThrow();
     }
-    public MaintenanceRequest createRequest(MaintenanceRequest request) {
-        Garage garage = garageRepository.findById(request.getGarage().getId()).orElseThrow();
-        Car car = carRepository.findById(request.getCar().getId()).orElseThrow();
-        long bookedRequests = maintenanceRequestRepository.countByGarageIdAndScheduledDate(garage.getId(), request.getScheduledDate());
+    public MaintenanceRequest createRequest(CreateMaintenanceDTO request) {
+        Garage garage = garageRepository.findById(request.getGarageId()).orElseThrow();
+        Car car = carRepository.findById(request.getCarId()).orElseThrow();
 
-        if (bookedRequests >= garage.getCapacity()) {
-            throw new IllegalArgumentException("No available slots in the garage for the selected date.");
-        }
-        request.setGarage(garage);
-        request.setCar(car);
-        return maintenanceRequestRepository.save(request);
+        MaintenanceRequest maintenanceRequest = new MaintenanceRequest();
+        maintenanceRequest.setCar(car);
+        maintenanceRequest.setGarage(garage);
+        maintenanceRequest.setServiceType(request.getServiceType());
+        maintenanceRequest.setScheduledDate(request.getScheduledDate());
+        return maintenanceRequestRepository.save(maintenanceRequest);
 
     }
 
-    public MaintenanceRequest updateRequest(Long id, MaintenanceRequest requestDetails) {
+    public MaintenanceRequest updateRequest(Long id, UpdateMaintenanceDTO updateMaintenanceDTO) {
         MaintenanceRequest request = maintenanceRequestRepository.findById(id)
                 .orElseThrow();
 
-        request.setScheduledDate(requestDetails.getScheduledDate());
-        request.setCar(requestDetails.getCar());
-        request.setGarage(requestDetails.getGarage());
-        request.setServiceType(requestDetails.getServiceType());
+        Car car = carRepository.findById(updateMaintenanceDTO.getCarId())
+                .orElseThrow(() -> new IllegalArgumentException("Car with ID " + updateMaintenanceDTO.getCarId() + " not found"));
+
+        Garage garage = garageRepository.findById(updateMaintenanceDTO.getGarageId())
+                .orElseThrow(() -> new IllegalArgumentException("Garage with ID " + updateMaintenanceDTO.getGarageId() + " not found"));
+        request.setGarage(garage);
+        request.setServiceType(updateMaintenanceDTO.getServiceType());
+        request.setScheduledDate(updateMaintenanceDTO.getScheduledDate());
         return maintenanceRequestRepository.save(request);
     }
 
@@ -65,6 +90,16 @@ public class MaintenanceRequestService {
         MaintenanceRequest request = maintenanceRequestRepository.findById(id)
                 .orElseThrow();
         maintenanceRequestRepository.delete(request);
+    }
+
+    public List<MonthlyRequestsReportDTO> getMonthlyReport(Optional<Long> garageId, String startDate, String endDate) {
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
+
+        List<MonthlyRequestsReportDTO> report = new ArrayList<>();
+
+
+        return report;
     }
 
 }

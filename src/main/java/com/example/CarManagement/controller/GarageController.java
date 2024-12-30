@@ -1,11 +1,15 @@
 package com.example.CarManagement.controller;
 
+import com.example.CarManagement.dto.CreateGarageDTO;
+import com.example.CarManagement.dto.ResponseGarageDTO;
+import com.example.CarManagement.dto.UpdateGarageDTO;
 import com.example.CarManagement.model.Garage;
 import com.example.CarManagement.service.GarageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,17 +22,17 @@ public class GarageController {
     private GarageService garageService;
 
     @GetMapping
-    public List<Garage> getAllGarages(@RequestParam Optional<String> city) {
+    public List<ResponseGarageDTO> getAllGarages(@RequestParam Optional<String> city) {
             return garageService.getAllGarage(city);
 
     }
     @GetMapping("/{id}")
-    public ResponseEntity<Garage> getGarageById(@PathVariable Long id) {
+    public ResponseEntity<ResponseGarageDTO> getGarageById(@PathVariable Long id) {
         return new ResponseEntity<>(garageService.getGarageById(id),HttpStatus.OK) ;
     }
 
     @PostMapping
-    public ResponseEntity<Garage> createGarage(@RequestBody Garage garage) {
+    public ResponseEntity<Garage> createGarage(@RequestBody CreateGarageDTO garage) {
         try {
 
             return new ResponseEntity<>( garageService.createGarage(garage), HttpStatus.OK);
@@ -38,13 +42,10 @@ public class GarageController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<String> updateGarage(@PathVariable Long id, @RequestBody Garage garage) {
-        try {
-            garageService.updateGarage(id, garage);
-            return new ResponseEntity<>("The garage is updated", HttpStatus.OK);
-        }catch (Exception e){
-            return new ResponseEntity<>("The garage is not updated", HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<Garage> updateGarage(@PathVariable Long id,@Validated@RequestBody UpdateGarageDTO garage) {
+
+        Garage updatedGarage = garageService.updateGarage(id, garage);
+        return ResponseEntity.ok(updatedGarage);
 
     }
 

@@ -1,5 +1,6 @@
 package com.example.CarManagement.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,6 +20,8 @@ public class Garage {
     @Column(nullable = false)
     private String city;
     private int capacity;
+
+    @JsonIgnore
     @OneToMany(mappedBy = "garage", cascade = CascadeType.ALL)
     private List<MaintenanceRequest> maintenanceRequests;
 

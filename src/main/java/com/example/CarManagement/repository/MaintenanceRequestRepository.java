@@ -8,14 +8,12 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface MaintenanceRequestRepository extends JpaRepository<MaintenanceRequest,Long> {
     List<MaintenanceRequest> findByCarId(Long carId);
     List<MaintenanceRequest> findByGarageId(Long serviceCenterId);
     List<MaintenanceRequest> findByScheduledDateBetween(String startDate, String endDate);
-    @Query("SELECT COUNT(m) FROM MaintenanceRequest m WHERE m.garage.id = :garageId AND m.scheduledDate = :scheduledDate")
-    long countByGarageIdAndScheduledDate(@Param("garageId") Long garageId, @Param("scheduledDate") String scheduledDate);
-
 
 }

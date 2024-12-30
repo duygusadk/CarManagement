@@ -1,5 +1,8 @@
 package com.example.CarManagement.service;
 
+import com.example.CarManagement.dto.CreateCarDTO;
+import com.example.CarManagement.dto.ResponseCarDTO;
+import com.example.CarManagement.dto.UpdateCarDTO;
 import com.example.CarManagement.model.Car;
 import com.example.CarManagement.model.Garage;
 import com.example.CarManagement.repository.CarRepository;
@@ -9,9 +12,11 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Data
@@ -23,47 +28,82 @@ public class CarService {
     @Autowired
     private GarageRepository garageRepository;
 
-    public List<Car> getAllCars(Optional<String> make,
-                                Optional<Long> garageId,
-                                Optional<Integer> fromYear,
-                                Optional<Integer> toYear) {
+    public List<ResponseCarDTO> getAllCars(Optional<String> make,
+                                           Optional<Long> garageId,
+                                           Optional<Integer> fromYear,
+                                           Optional<Integer> toYear) {
+
+        List<Car>cars;
         if(make.isPresent()){
-            return carRepository.findByMake(make.get());
+            cars= carRepository.findByMake(make.get());
         } else if (garageId.isPresent()) {
-            return carRepository.findByGarages_Id(garageId.get());
+            cars= carRepository.findByGarages_Id(garageId.get());
         }else if(fromYear.isPresent() && toYear.isPresent()) {
-            return carRepository.findByProductionYearBetween(fromYear.get(), toYear.get());
+            cars=  carRepository.findByProductionYearBetween(fromYear.get(), toYear.get());
         }
-        return carRepository.findAll();
+        cars=  carRepository.findAll();
+        return cars.stream()
+                .map(car -> new ResponseCarDTO(
+                        car.getId(),
+                        car.getMake(),
+                        car.getModel(),
+                        car.getProductionYear(),
+                        car.getLicensePlate(),
+                        car.getGarages()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public ResponseCarDTO getCarById(Long id){
+        Car car=carRepository.findById(id).orElseThrow();
+        return new ResponseCarDTO(
+                car.getId(),
+                car.getMake(),
+                car.getModel(),
+                car.getProductionYear(),
+                car.getLicensePlate(),
+                car.getGarages()
+        );
 
     }
 
-    public Car getCarById(Long id){
+    public void createCar(CreateCarDTO createCarDTO) {
 
-        return  carRepository.findById(id).orElseThrow();
 
+        Car car = new Car();
+        car.setMake(createCarDTO.getMake());
+        car.setModel(createCarDTO.getModel());
+        car.setLicensePlate(createCarDTO.getLicensePlate());
+        car.setProductionYear(createCarDTO.getProductionYear());
+
+        List<Garage> garages = new ArrayList<>();
+        if (createCarDTO.getGarageIds() != null) {
+            for (Long garageId : createCarDTO.getGarageIds()) {
+                Garage garage = garageRepository.findById(garageId).orElseThrow(() -> new IllegalArgumentException("Garage not found"));
+                garages.add(garage);
+            }
+        }
+        car.setGarages(garages);
+
+         carRepository.save(car);
     }
 
-    public Car createCar(Car car) {
-
-
-        return carRepository.save(car);
-    }
-
-    public Car updateCar(Long id, Car car) {
+    public Car updateCar(Long id, UpdateCarDTO updateCarDTO) {
 
         Car updatedCar=carRepository.findById(id).orElseThrow();
-        if (car.getGarages() != null) {
-            List<Garage> garages = garageRepository.findAllById(
-                    car.getGarages().stream().map(Garage::getId).toList()
-            );
+        if (updateCarDTO.getGarageIds() != null) {
+            List<Garage> garages = updateCarDTO.getGarageIds()
+                    .stream()
+                    .map(garageId -> garageRepository.findById(garageId)
+                            .orElseThrow(() -> new IllegalArgumentException("Garage with ID " + garageId + " not found")))
+                    .collect(Collectors.toList());
             updatedCar.setGarages(garages);
         }
-        updatedCar.setMake(car.getMake());
-        updatedCar.setModel(car.getModel());
-        updatedCar.setLicensePlate(car.getLicensePlate());
-        updatedCar.setProductionYear(car.getProductionYear());
-        updatedCar.setId(car.getId());
+        updatedCar.setMake(updateCarDTO.getMake());
+        updatedCar.setModel(updateCarDTO.getModel());
+        updatedCar.setLicensePlate(updateCarDTO.getLicensePlate());
+        updatedCar.setProductionYear(updateCarDTO.getProductionYear());
+
         return  carRepository.save(updatedCar);
     }
 

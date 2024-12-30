@@ -1,41 +1,26 @@
-package com.example.CarManagement.model;
+package com.example.CarManagement.dto;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import org.hibernate.annotations.Cascade;
+import com.example.CarManagement.model.Garage;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Entity
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class Car {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @NonNull
+public class ResponseCarDTO {
+    private  Long id;
     private String make;
-    @NonNull
     private String model;
-
     private int productionYear;
-    @NonNull
     private String licensePlate;
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "car_garage",
-            joinColumns = @JoinColumn(name = "car_id"),
-            inverseJoinColumns = @JoinColumn(name = "garage_id")
-    )
+    private List<Garage>garages;
 
-    private List<Garage> garages;
-
+    public ResponseCarDTO(Long id, String make, String model, int productionYear, String licensePlate, List<Garage> garages) {
+        this.id = id;
+        this.make = make;
+        this.model = model;
+        this.productionYear = productionYear;
+        this.licensePlate = licensePlate;
+        this.garages = garages;
+    }
 
     public Long getId() {
         return id;
@@ -83,9 +68,5 @@ public class Car {
 
     public void setGarages(List<Garage> garages) {
         this.garages = garages;
-    }
-
-    public void setGarageIds(List<Long> garageIds) {
-
     }
 }

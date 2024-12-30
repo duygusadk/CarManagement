@@ -1,10 +1,14 @@
 package com.example.CarManagement.controller;
 
+import com.example.CarManagement.dto.CreateCarDTO;
+import com.example.CarManagement.dto.ResponseCarDTO;
+import com.example.CarManagement.dto.UpdateCarDTO;
 import com.example.CarManagement.model.Car;
 import com.example.CarManagement.service.CarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,15 +24,15 @@ public class CarController {
 
 
     @GetMapping
-    public List<Car> getAllCars(@RequestParam Optional<String> make,
-                                @RequestParam Optional<Long> garageId,
-                                @RequestParam Optional<Integer> fromYear,
-                                @RequestParam Optional<Integer> toYear) {
+    public List<ResponseCarDTO> getAllCars(@RequestParam Optional<String> make,
+                                           @RequestParam Optional<Long> garageId,
+                                           @RequestParam Optional<Integer> fromYear,
+                                           @RequestParam Optional<Integer> toYear) {
         return carService.getAllCars(make,garageId,fromYear,toYear);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Car> getCarById(@PathVariable Long id){
+    public ResponseEntity<ResponseCarDTO> getCarById(@PathVariable Long id){
         try {
             return new ResponseEntity<>(carService.getCarById(id),HttpStatus.OK);
         }catch (Exception e){
@@ -37,12 +41,13 @@ public class CarController {
     }
 
     @PostMapping
-    public ResponseEntity<Car> createCar(@RequestBody Car car) {
-        return new ResponseEntity<>(carService.createCar(car),HttpStatus.CREATED);
+    public ResponseEntity<String> createCar(@Validated@RequestBody CreateCarDTO createCarDTO) {
+        carService.createCar(createCarDTO);
+        return new ResponseEntity<>("Car created successfully",HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Car> updateCar(@PathVariable Long id, @RequestBody Car car) {
+    public ResponseEntity<Car> updateCar(@PathVariable Long id, @Validated @RequestBody UpdateCarDTO car) {
         return new ResponseEntity<>(carService.updateCar(id, car),HttpStatus.OK) ;
    }
 

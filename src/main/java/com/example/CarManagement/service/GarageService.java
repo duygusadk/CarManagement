@@ -1,17 +1,18 @@
 package com.example.CarManagement.service;
 
+import com.example.CarManagement.dto.CreateGarageDTO;
+import com.example.CarManagement.dto.GarageDailyAvailabilityReportDTO;
+import com.example.CarManagement.dto.ResponseGarageDTO;
+import com.example.CarManagement.dto.UpdateGarageDTO;
 import com.example.CarManagement.model.Garage;
 import com.example.CarManagement.repository.GarageRepository;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import com.example.CarManagement.repository.MaintenanceRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 
@@ -19,26 +20,48 @@ public class GarageService {
     @Autowired
     private GarageRepository garageRepository;
 
+    private MaintenanceRequestRepository maintenanceRequestRepository;
 
-    public List<Garage> getAllGarage(Optional<String> city) {
+
+    public List<ResponseGarageDTO> getAllGarage(Optional<String> city) {
+        List<Garage> garages;
         if(city.isPresent()){
-            return garageRepository.findByCity(city.get());
+            garages= garageRepository.findByCity(city.get());
+        }else {
+            garages = garageRepository.findAll();
         }
-        return garageRepository.findAll();
+        return garages.stream().map(garage->new ResponseGarageDTO(
+                garage.getId(),
+                garage.getName(),
+                garage.getLocation(),
+                garage.getCity(),
+                garage.getCapacity())).collect(Collectors.toList());
     }
-    public Garage getGarageById(Long id) {
-        return garageRepository.findById(id).orElseThrow();
+    public ResponseGarageDTO getGarageById(Long id) {
+        Garage garage=garageRepository.findById(id).orElseThrow();
+       return new ResponseGarageDTO(
+               garage.getId(),
+               garage.getName(),
+               garage.getLocation(),
+               garage.getCity(),
+               garage.getCapacity());
+
     }
 
-    public Garage createGarage(Garage garage) {
+    public Garage createGarage(CreateGarageDTO createGarageDTO) {
+        Garage garage = new Garage();
+        garage.setName(createGarageDTO.getName());
+        garage.setLocation(createGarageDTO.getLocation());
+        garage.setCity(createGarageDTO.getCity());
+        garage.setCapacity(createGarageDTO.getCapacity());
+
        return garageRepository.save(garage);
     }
 
-    public Garage updateGarage(Long id, Garage garage) {
+    public Garage updateGarage(Long id, UpdateGarageDTO garage) {
 
       Garage updatedGarage=garageRepository.findById(id).orElseThrow();
 
-      updatedGarage.setId(garage.getId());
       updatedGarage.setCity(garage.getCity());
       updatedGarage.setName(garage.getName());
       updatedGarage.setLocation(garage.getLocation());
@@ -50,4 +73,11 @@ public class GarageService {
     public void deleteGarage(Long id) {
         garageRepository.deleteById(id);
     }
+
+
+    public GarageDailyAvailabilityReportDTO garageReport(Long garageId, String startDate, String endDate) {
+
+      return null;
+    }
+
 }
