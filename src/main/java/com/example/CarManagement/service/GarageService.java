@@ -110,7 +110,7 @@ public class GarageService {
             currentDate = currentDate.plusDays(1);
         }
 
-        return report; // Връщаме списъка с отчетни данни
+        return report; 
     }
 
 }
