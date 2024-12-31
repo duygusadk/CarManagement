@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,35 +29,30 @@ public class MaintenanceRequestController {
                                                        @RequestParam Optional<String> endDate) {
         return maintenanceRequestService.getAllRequests(carId, garageId, startDate, endDate);
     }
+
     @GetMapping("/{id}")
-    public ResponseEntity<MaintenanceRequest> getRequestById(@PathVariable Long id) {
-    return  new ResponseEntity<>(maintenanceRequestService.getMaintenanceRequestById(id), HttpStatus.OK);
+    public ResponseMaintenanceDTO getRequestById(@PathVariable Long id) {
+        return maintenanceRequestService.getMaintenanceRequestById(id);
     }
+
     @GetMapping("/monthlyRequestsReport")
     public List<MonthlyRequestsReportDTO> getMonthlyReport(
-            @RequestParam Optional<Long> garageId,
-            @RequestParam String startDate,
-            @RequestParam String endDate) {
+            @RequestParam Long garageId,
+            @RequestParam String startMonth,
+            @RequestParam String endMonth) {
 
-        return maintenanceRequestService.getMonthlyReport(garageId, startDate, endDate);
+        return maintenanceRequestService.getMonthlyReport(garageId, startMonth, endMonth);
     }
+
     @PostMapping
-    public ResponseEntity<MaintenanceRequest> createRequest(@RequestBody CreateMaintenanceDTO maintenanceRequest) {
-        try {
+    public ResponseMaintenanceDTO createRequest(@RequestBody CreateMaintenanceDTO maintenanceRequest) {
 
-            return new ResponseEntity<>( maintenanceRequestService.createRequest(maintenanceRequest), HttpStatus.OK);
-        }catch (Exception e){
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-        }
+        return maintenanceRequestService.createRequest(maintenanceRequest);
     }
-    @PutMapping("/{id}")
-    public ResponseEntity<MaintenanceRequest> updateRequest(@PathVariable Long id, @RequestBody UpdateMaintenanceDTO maintenanceRequest) {
-        try {
 
-            return new ResponseEntity<>(maintenanceRequestService.updateRequest(id, maintenanceRequest), HttpStatus.OK);
-        }catch (Exception e){
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-        }
+    @PutMapping("/{id}")
+    public ResponseMaintenanceDTO updateRequest(@PathVariable Long id, @RequestBody UpdateMaintenanceDTO maintenanceRequest) {
+        return maintenanceRequestService.updateRequest(id, maintenanceRequest);
 
     }
 
@@ -66,7 +62,7 @@ public class MaintenanceRequestController {
         try {
             maintenanceRequestService.deleteRequest(id);
             return new ResponseEntity<>("The request is deleted", HttpStatus.OK);
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>("The request is not deleted", HttpStatus.BAD_REQUEST);
         }
     }

@@ -41,9 +41,9 @@ public class CarController {
     }
 
     @PostMapping
-    public ResponseEntity<String> createCar(@Validated@RequestBody CreateCarDTO createCarDTO) {
-        carService.createCar(createCarDTO);
-        return new ResponseEntity<>("Car created successfully",HttpStatus.CREATED);
+    public ResponseEntity<Car> createCar(@Validated@RequestBody CreateCarDTO createCarDTO) {
+
+        return new ResponseEntity<>(carService.createCar(createCarDTO),HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")

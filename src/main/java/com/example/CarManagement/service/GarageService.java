@@ -5,11 +5,14 @@ import com.example.CarManagement.dto.GarageDailyAvailabilityReportDTO;
 import com.example.CarManagement.dto.ResponseGarageDTO;
 import com.example.CarManagement.dto.UpdateGarageDTO;
 import com.example.CarManagement.model.Garage;
+import com.example.CarManagement.model.MaintenanceRequest;
 import com.example.CarManagement.repository.GarageRepository;
 import com.example.CarManagement.repository.MaintenanceRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -20,6 +23,7 @@ public class GarageService {
     @Autowired
     private GarageRepository garageRepository;
 
+    @Autowired
     private MaintenanceRequestRepository maintenanceRequestRepository;
 
 
@@ -75,9 +79,38 @@ public class GarageService {
     }
 
 
-    public GarageDailyAvailabilityReportDTO garageReport(Long garageId, String startDate, String endDate) {
+    public List<GarageDailyAvailabilityReportDTO> getGarageDailyAvailabilityReport(Long garageId, String startDate, String endDate) {
 
-      return null;
+        List<GarageDailyAvailabilityReportDTO> report = new ArrayList<>();
+
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
+
+        Garage garage = garageRepository.findById(garageId).orElseThrow(() -> new RuntimeException("Garage not found"));
+
+        LocalDate currentDate = start;
+
+        while (!currentDate.isAfter(end)) {
+
+            List<MaintenanceRequest> dailyRequests = maintenanceRequestRepository.findByScheduledDateAndGarageId(currentDate.toString(), garageId);
+
+
+            int requests = dailyRequests.size();
+            int availableCapacity = garage.getCapacity() - requests;
+
+            GarageDailyAvailabilityReportDTO dto = new GarageDailyAvailabilityReportDTO(
+                    currentDate.toString(),
+                    requests,
+                    availableCapacity
+            );
+
+
+            report.add(dto);
+
+            currentDate = currentDate.plusDays(1);
+        }
+
+        return report; // Връщаме списъка с отчетни данни
     }
 
 }

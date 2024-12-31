@@ -6,6 +6,7 @@ public class CreateGarageDTO {
     private  int capacity;
     private  String city;
 
+
     public String getName() {
         return name;
     }

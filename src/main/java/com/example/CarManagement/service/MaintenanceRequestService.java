@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,10 +56,17 @@ public class MaintenanceRequestService {
                 ))
                 .collect(Collectors.toList());
     }
-    public MaintenanceRequest getMaintenanceRequestById(Long id) {
-        return maintenanceRequestRepository.findById(id).orElseThrow();
+    public ResponseMaintenanceDTO getMaintenanceRequestById(Long id) {
+        MaintenanceRequest request=maintenanceRequestRepository.findById(id).orElseThrow();
+        return new ResponseMaintenanceDTO( request.getId(),
+                request.getCar().getId(),
+                request.getCar().getMake() + " " + request.getCar().getModel(),
+                request.getServiceType(),
+                request.getScheduledDate(),
+                request.getGarage().getId(),
+                request.getGarage().getName());
     }
-    public MaintenanceRequest createRequest(CreateMaintenanceDTO request) {
+    public ResponseMaintenanceDTO createRequest(CreateMaintenanceDTO request) {
         Garage garage = garageRepository.findById(request.getGarageId()).orElseThrow();
         Car car = carRepository.findById(request.getCarId()).orElseThrow();
 
@@ -67,11 +75,19 @@ public class MaintenanceRequestService {
         maintenanceRequest.setGarage(garage);
         maintenanceRequest.setServiceType(request.getServiceType());
         maintenanceRequest.setScheduledDate(request.getScheduledDate());
-        return maintenanceRequestRepository.save(maintenanceRequest);
+
+        maintenanceRequest=maintenanceRequestRepository.save(maintenanceRequest);
+        return new ResponseMaintenanceDTO(maintenanceRequest.getId(),
+                maintenanceRequest.getCar().getId(),
+                maintenanceRequest.getCar().getMake() + " " + maintenanceRequest.getCar().getModel(),
+                maintenanceRequest.getServiceType(),
+                maintenanceRequest.getScheduledDate(),
+                maintenanceRequest.getGarage().getId(),
+                maintenanceRequest.getGarage().getName());
 
     }
 
-    public MaintenanceRequest updateRequest(Long id, UpdateMaintenanceDTO updateMaintenanceDTO) {
+    public ResponseMaintenanceDTO updateRequest(Long id, UpdateMaintenanceDTO updateMaintenanceDTO) {
         MaintenanceRequest request = maintenanceRequestRepository.findById(id)
                 .orElseThrow();
 
@@ -81,9 +97,17 @@ public class MaintenanceRequestService {
         Garage garage = garageRepository.findById(updateMaintenanceDTO.getGarageId())
                 .orElseThrow(() -> new IllegalArgumentException("Garage with ID " + updateMaintenanceDTO.getGarageId() + " not found"));
         request.setGarage(garage);
+        request.setCar(car);
         request.setServiceType(updateMaintenanceDTO.getServiceType());
         request.setScheduledDate(updateMaintenanceDTO.getScheduledDate());
-        return maintenanceRequestRepository.save(request);
+        request=maintenanceRequestRepository.save(request);
+        return new ResponseMaintenanceDTO(request.getId(),
+                request.getCar().getId(),
+                request.getCar().getMake() + " " + request.getCar().getModel(),
+                request.getServiceType(),
+                request.getScheduledDate(),
+                request.getGarage().getId(),
+                request.getGarage().getName());
     }
 
     public void deleteRequest(Long id) {
@@ -92,13 +116,32 @@ public class MaintenanceRequestService {
         maintenanceRequestRepository.delete(request);
     }
 
-    public List<MonthlyRequestsReportDTO> getMonthlyReport(Optional<Long> garageId, String startDate, String endDate) {
-        LocalDate start = LocalDate.parse(startDate);
-        LocalDate end = LocalDate.parse(endDate);
+    public List<MonthlyRequestsReportDTO> getMonthlyReport(Long garageId, String start, String end ) {
 
         List<MonthlyRequestsReportDTO> report = new ArrayList<>();
 
+        YearMonth startDate=YearMonth.parse(start);
+        YearMonth endDate=YearMonth.parse(end);
+        YearMonth currentMonth = startDate;
 
+
+        while (!currentMonth.isAfter(endDate)) {
+            LocalDate monthStartDate = currentMonth.atDay(1);
+            LocalDate monthEndDate = currentMonth.atEndOfMonth();
+
+            List<MaintenanceRequest> monthlyRequests = maintenanceRequestRepository.findByScheduledDateBetweenAndGarageId(
+                    monthStartDate.toString(),
+                    monthEndDate.toString(),
+                    garageId
+            );
+
+            int totalRequests = monthlyRequests.size();
+
+            MonthlyRequestsReportDTO dto = new MonthlyRequestsReportDTO(currentMonth.toString(), totalRequests );
+            report.add(dto);
+            currentMonth = currentMonth.plusMonths(1);
+
+        }
         return report;
     }
 

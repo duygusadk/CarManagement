@@ -40,8 +40,10 @@ public class CarService {
             cars= carRepository.findByGarages_Id(garageId.get());
         }else if(fromYear.isPresent() && toYear.isPresent()) {
             cars=  carRepository.findByProductionYearBetween(fromYear.get(), toYear.get());
+        }else{
+            cars=  carRepository.findAll();
         }
-        cars=  carRepository.findAll();
+
         return cars.stream()
                 .map(car -> new ResponseCarDTO(
                         car.getId(),
@@ -67,7 +69,7 @@ public class CarService {
 
     }
 
-    public void createCar(CreateCarDTO createCarDTO) {
+    public Car createCar(CreateCarDTO createCarDTO) {
 
 
         Car car = new Car();
@@ -85,7 +87,7 @@ public class CarService {
         }
         car.setGarages(garages);
 
-         carRepository.save(car);
+        return carRepository.save(car);
     }
 
     public Car updateCar(Long id, UpdateCarDTO updateCarDTO) {
@@ -108,6 +110,8 @@ public class CarService {
     }
 
     public void deleteCar(Long id) {
+        Car car = carRepository.findById(id).orElseThrow();
+        car.getGarages().clear();
       carRepository.deleteById(id);
     }
 }

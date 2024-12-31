@@ -1,6 +1,7 @@
 package com.example.CarManagement.controller;
 
 import com.example.CarManagement.dto.CreateGarageDTO;
+import com.example.CarManagement.dto.GarageDailyAvailabilityReportDTO;
 import com.example.CarManagement.dto.ResponseGarageDTO;
 import com.example.CarManagement.dto.UpdateGarageDTO;
 import com.example.CarManagement.model.Garage;
@@ -29,6 +30,13 @@ public class GarageController {
     @GetMapping("/{id}")
     public ResponseEntity<ResponseGarageDTO> getGarageById(@PathVariable Long id) {
         return new ResponseEntity<>(garageService.getGarageById(id),HttpStatus.OK) ;
+    }
+    @GetMapping("/dailyAvailabilityReport")
+    public List<GarageDailyAvailabilityReportDTO> getDaily(@RequestParam Long garageId,
+                                                           @RequestParam String startDate,
+                                                           @RequestParam String endDate) {
+        return garageService.getGarageDailyAvailabilityReport(garageId,startDate,endDate);
+
     }
 
     @PostMapping

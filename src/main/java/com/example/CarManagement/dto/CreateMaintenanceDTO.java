@@ -6,6 +6,13 @@ public class CreateMaintenanceDTO {
     private String serviceType;
     private String scheduledDate;
 
+    public CreateMaintenanceDTO(Long garageId, Long carId, String serviceType, String scheduledDate) {
+        this.garageId = garageId;
+        this.carId = carId;
+        this.serviceType = serviceType;
+        this.scheduledDate = scheduledDate;
+    }
+
     public Long getGarageId() {
         return garageId;
     }

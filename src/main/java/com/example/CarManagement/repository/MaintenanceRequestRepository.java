@@ -16,4 +16,7 @@ public interface MaintenanceRequestRepository extends JpaRepository<MaintenanceR
     List<MaintenanceRequest> findByGarageId(Long serviceCenterId);
     List<MaintenanceRequest> findByScheduledDateBetween(String startDate, String endDate);
 
+    List<MaintenanceRequest> findByScheduledDateBetweenAndGarageId(String startDate, String endDate, Long garageId);
+
+    List<MaintenanceRequest> findByScheduledDateAndGarageId(String string, Long garageId);
 }

@@ -33,7 +33,6 @@ public class Car {
             joinColumns = @JoinColumn(name = "car_id"),
             inverseJoinColumns = @JoinColumn(name = "garage_id")
     )
-
     private List<Garage> garages;
 
 
